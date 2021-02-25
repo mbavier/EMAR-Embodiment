@@ -25,35 +25,35 @@ auth_request = connection.post(url=AUTH_URL, params=auth_req_params)
 auth_info = auth_request.json()
 auth_params = {'auth': auth_info["idToken"]}
 
-portH0, packetH0 = motorInitialize(1, "COM3")
-portH1, packetH1 = motorInitialize(2, "COM3")
-comm_results, error = writeToAddr(11, 3, 1, 1, portH0, packetH0)
-comm_results, error = writeToAddr(11, 3, 1, 1, portH1, packetH1)
+portH, packetH = motorInitialize("COM3")
+turnOnMotors(1, portH, packetH)
+comm_results, error = writeToAddr(11, 3, 1, 1, portH, packetH)
+comm_results, error = writeToAddr(11, 3, 1, 1, portH, packetH)
 
-if (getPresPosition(1, portH0, packetH0) >= 3990):
+if (getPresPosition(1, portH, packetH) >= 3990):
     goal_pos0 = 0
 else:
     goal_pos0 = 4000
 
-if (getPresPosition(1, portH1, packetH1) >= 3990):
+if (getPresPosition(1, portH, packetH) >= 3990):
     goal_pos1 = 0
 else:
     goal_pos1 = 4000
 
-#moveMotorTo(1, goal_pos0, portH0, packetH0)
-#moveMotorTo(2, goal_pos1, portH1, packetH1)
-moveTwoMotorsTo(1, goal_pos0, portH0, packetH0, 2, goal_pos1, portH1, packetH1)
+#moveMotorTo(1, goal_pos0, portH, packetH)
+#moveMotorTo(2, goal_pos1, portH, packetH)
+moveTwoMotorsTo(1, goal_pos0, portH, packetH, 2, goal_pos1, portH, packetH)
 # Setup motors
-setVelocity(1, 500, portH0, packetH0)
-setVelocity(2, 500, portH1, packetH1)
+setVelocity(1, 500, portH, packetH)
+setVelocity(2, 500, portH, packetH)
 
 # Sets max acceleration, will never go above 50% of velocity
-setAcceleration(1, 45, portH0, packetH0)
-setAcceleration(2, 45, portH1, packetH1)
+setAcceleration(1, 45, portH, packetH)
+setAcceleration(2, 45, portH, packetH)
 
 # Set goal PWM
-setGoalPWM(1, 100, portH0, packetH0)
-setGoalPWM(2, 100, portH1, packetH1)
+setGoalPWM(1, 100, portH, packetH)
+setGoalPWM(2, 100, portH, packetH)
 
 # Main loop
 
@@ -74,5 +74,5 @@ while(True):
 		print("New motor values: " + str(new_motor_values))
 		# TODO: Do something with the new motor values
 		motor_values = new_motor_values
-		moveTwoMotorsTo(1, motor_values[0], portH0, packetH0, 2, motor_values[1], portH1, packetH1)
+		moveTwoMotorsTo(1, motor_values[0], portH, packetH, 2, motor_values[1], portH, packetH)
 	time.sleep(0.1)

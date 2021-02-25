@@ -56,7 +56,7 @@ def readAddr(addr, motor_id, size_in_bytes, portHandler, packetHandler):
 
 
 
-def motorInitialize(motor_id, device_port="COM4", protocol_version=2.0, BAUDRATE=57600):
+def motorInitialize(device_port="COM4", protocol_version=2.0, BAUDRATE=57600):
     portHandler = PortHandler(device_port)
     packetHandler = PacketHandler(protocol_version)
     # Open port
@@ -76,6 +76,9 @@ def motorInitialize(motor_id, device_port="COM4", protocol_version=2.0, BAUDRATE
         getch()
         quit()
     # Torque Enable - Addr 64
+    return portHandler, packetHandler
+
+def turnOnMotors(motor_id, portHandler, packetHandler):
     result, error = writeToAddr(64, 1, motor_id, 1, portHandler, packetHandler)
     if result != COMM_SUCCESS:
         print("%s" % packetHandler.getTxRxResult(result))
@@ -83,8 +86,6 @@ def motorInitialize(motor_id, device_port="COM4", protocol_version=2.0, BAUDRATE
         print("%s" % packetHandler.getRxPacketError(error))
     else:
         print("Dynamixel#%d has been successfully connected" % motor_id)
-    return portHandler, packetHandler
-
 
 def turnOffMotors(motor_id, portHandler, packetHandler):
     # Torque Enable - Addr 64
@@ -130,7 +131,7 @@ def moveTwoMotorsTo(motor_id, pos, portHandler, packetHandler, motor_id2, pos2, 
         pres_pos2 = getPresPosition(motor_id2, portHandler2, packetHandler2)
         print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (motor_id, pos, pres_pos))
         print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (motor_id2, pos2, pres_pos2))
-        if not (abs(pos - pres_pos) > 20 & abs(pos2 - pres_pos2) > 20): # 20 is moving status threshold
+        if not (abs(pos - pres_pos) > 20 & abs(pos2 - pres_pos2) >): # 20 is moving status threshold
             break
     
 def getPresPosition(motor_id, portHandler, packetHandler):
