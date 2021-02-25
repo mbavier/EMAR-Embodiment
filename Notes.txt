@@ -1,0 +1,2 @@
+Without setting velocity it goes to about 300
+Read what is a profile in https://emanual.robotis.com/docs/en/dxl/x/2xc430-w250/#what-is-the-profile
