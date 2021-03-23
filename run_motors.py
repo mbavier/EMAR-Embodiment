@@ -114,6 +114,30 @@ def moveMotorTo(motor_id, pos, portHandler, packetHandler):
         if not (abs(pos - pres_pos) > 20): # 20 is moving status threshold
             break
 
+def moveMotorListTo(motor_ids, pos_list, portHandler, packetHandler):
+    # Write the goal positions to their respective motors based on ids
+    for i, motor_id in enumerate(motor_ids):
+        pos = pos_list[i]
+        result, error = writeToAddr(116, pos, motor_id, 4, portHandler, packetHandler)
+        if result != COMM_SUCCESS:
+            print("%s" % packetHandler.getTxRxResult(result))
+        elif error != 0:
+            print("%s" % packetHandler.getRxPacketError(error))
+    while 1:
+        # Read Dynamixel#2 present position
+        move_done = True
+        for i, motor_id in enumerate(motor_ids):
+            pos = pos_list[i]
+            pres_pos = getPresPosition(motor_id, portHandler, packetHandler)
+            print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (motor_id, pos, pres_pos))
+
+            if (abs(pos - pres_pos) > 20): # 20 is moving status threshold
+                move_done = False
+            else:
+                move_done = move_done & True
+        if (move_done):
+            break
+
 def moveTwoMotorsTo(motor_id, pos, portHandler, packetHandler, motor_id2, pos2, portHandler2, packetHandler2):
     result, error = writeToAddr(116, pos, motor_id, 4, portHandler, packetHandler)
     if result != COMM_SUCCESS:
@@ -131,7 +155,7 @@ def moveTwoMotorsTo(motor_id, pos, portHandler, packetHandler, motor_id2, pos2, 
         pres_pos2 = getPresPosition(motor_id2, portHandler2, packetHandler2)
         print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (motor_id, pos, pres_pos))
         print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (motor_id2, pos2, pres_pos2))
-        if not (abs(pos - pres_pos) > 20 & abs(pos2 - pres_pos2) >): # 20 is moving status threshold
+        if not (abs(pos - pres_pos) > 20 & abs(pos2 - pres_pos2) > 20): # 20 is moving status threshold
             break
     
 def getPresPosition(motor_id, portHandler, packetHandler):

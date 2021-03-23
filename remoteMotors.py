@@ -7,7 +7,9 @@ from run_motors import *
 
 # Dummy data for motors
 # Currently stored as an array corresponding to [motor 1, motor 2]
-motor_values = [-1, -1]
+motor_values = {"head_0": -1, "head_1": -1, "body_0": -1, "body_1": -1}
+motor_id_list = [4, 5, 2, 3]
+new_motor_values = {"head_0": -1, "head_1": -1, "body_0": -1, "body_1": -1}
 
 # Robot from database to listen to
 this_robot_id = 0
@@ -25,36 +27,22 @@ auth_request = connection.post(url=AUTH_URL, params=auth_req_params)
 auth_info = auth_request.json()
 auth_params = {'auth': auth_info["idToken"]}
 
-portH, packetH = motorInitialize("COM3")
-turnOnMotors(1, portH, packetH)
-comm_results, error = writeToAddr(11, 3, 1, 1, portH, packetH)
-comm_results, error = writeToAddr(11, 3, 1, 1, portH, packetH)
+portH, packetH = motorInitialize("/dev/tty.usbserial-FT4TFNM7")
+#turnOnMotors(1, portH, packetH)
+turnOnMotors(2, portH, packetH)
+turnOnMotors(3, portH, packetH)
+turnOnMotors(4, portH, packetH)
+turnOnMotors(5, portH, packetH)
 
-if (getPresPosition(1, portH, packetH) >= 3990):
-    goal_pos0 = 0
-else:
-    goal_pos0 = 4000
 
-if (getPresPosition(1, portH, packetH) >= 3990):
-    goal_pos1 = 0
-else:
-    goal_pos1 = 4000
+comm_results, error = writeToAddr(11, 3, 2, 1, portH, packetH)
+comm_results, error = writeToAddr(11, 3, 3, 1, portH, packetH)
+comm_results, error = writeToAddr(11, 3, 4, 1, portH, packetH)
+comm_results, error = writeToAddr(11, 3, 5, 1, portH, packetH)
 
 #moveMotorTo(1, goal_pos0, portH, packetH)
 #moveMotorTo(2, goal_pos1, portH, packetH)
-moveTwoMotorsTo(1, goal_pos0, portH, packetH, 2, goal_pos1, portH, packetH)
-# Setup motors
-setVelocity(1, 500, portH, packetH)
-setVelocity(2, 500, portH, packetH)
-
-# Sets max acceleration, will never go above 50% of velocity
-setAcceleration(1, 45, portH, packetH)
-setAcceleration(2, 45, portH, packetH)
-
-# Set goal PWM
-setGoalPWM(1, 100, portH, packetH)
-setGoalPWM(2, 100, portH, packetH)
-
+moveMotorListTo([2, 3, 4, 5], [0, 4000, 0, 4000], portH, packetH)
 # Main loop
 
 
@@ -68,11 +56,17 @@ while(True):
 	##############
 	# Check if there is a new motor value in the database
 	##############
-	robot_state = robots[this_robot_id]["state"]
-	new_motor_values = [robot_state["motor0"], robot_state["motor1"]]
-	if (motor_values != new_motor_values):
+	web_data = robots[this_robot_id]["state"]["motors"]
+	values_updated = False
+	for motor_data in web_data:
+		
+		if(motor_values[motor_data['name']] != motor_data['value']):
+			values_updated = True
+			new_motor_values[motor_data['name']] = motor_data['value']
+	if (values_updated):
 		print("New motor values: " + str(new_motor_values))
 		# TODO: Do something with the new motor values
 		motor_values = new_motor_values
-		moveTwoMotorsTo(1, motor_values[0], portH, packetH, 2, motor_values[1], portH, packetH)
+		motor_value_list = list(motor_values.values())
+		moveMotorListTo(motor_id_list, motor_value_list, portH, packetH)
 	time.sleep(0.1)
